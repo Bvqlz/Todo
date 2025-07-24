@@ -47,7 +47,10 @@ void authRoutes(crow::App<crow::CookieParser>& app)
             crow::json::wvalue mJson;
             mJson["message"] = "User registered successfully.";
             mJson["userID"] = userID.value(); //This will return the actual value that the object has. We only do this once has_value confirms to prevent errors.
-            return crow::response(crow::status::CREATED, mJson);
+            crow::response res(crow::status::CREATED); // Create a response object
+            res.write(mJson.dump()); // Write the JSON string to the response body
+            res.set_header("Content-Type", "application/json"); // Set the Content-Type header
+            return res; // Return the response object
         }
         else
         {
@@ -82,9 +85,12 @@ void authRoutes(crow::App<crow::CookieParser>& app)
                     CROW_LOG_ERROR << "Invalid JSON in login request body.";
                     //creating a response requires a code, a body and an end.
                     res.code = crow::status::BAD_REQUEST;
-                    res.write("Missing username or password.");
+                    crow::json::wvalue error_json;
+                    error_json["message"] = "Missing username or password.";
+                    res.write(error_json.dump());
+                    res.set_header("Content-Type", "application/json");
                     res.end();
-                    return; // Void return
+                    return;
                 }
 
                 std::string username = json["username"].s();
@@ -100,7 +106,10 @@ void authRoutes(crow::App<crow::CookieParser>& app)
                 {
                     CROW_LOG_ERROR << "Database error getting user by username during login: " << e.what();
                     res.code = crow::status::INTERNAL_SERVER_ERROR;
-                    res.write("Database error during login.");
+                    crow::json::wvalue error_json;
+                    error_json["message"] = "Database error during login";
+                    res.write(error_json.dump());
+                    res.set_header("Content-Type", "application/json");
                     res.end();
                     return;
                 }
@@ -108,9 +117,12 @@ void authRoutes(crow::App<crow::CookieParser>& app)
                 if (!user.has_value()) //if our user object is empty then we can say that either was incorrect
                 {
                     res.code = crow::status::UNAUTHORIZED;
-                    res.write("Invalid username or password.");
+                    crow::json::wvalue error_json;
+                    error_json["message"] = "Invalid username or password.";
+                    res.write(error_json.dump());
+                    res.set_header("Content-Type", "application/json");
                     res.end();
-                    return; // Void return
+                    return;
                 }
                 CROW_LOG_INFO << "User '" << username << "' found. Verifying password...";
 
@@ -120,9 +132,12 @@ void authRoutes(crow::App<crow::CookieParser>& app)
                 {
                     CROW_LOG_INFO << "Password verification failed for user: " << username;
                     res.code = crow::status::UNAUTHORIZED;
-                    res.write("Invalid username or password.");
+                    crow::json::wvalue error_json;
+                    error_json["message"] = "Invalid username or password.";
+                    res.write(error_json.dump());
+                    res.set_header("Content-Type", "application/json");
                     res.end();
-                    return; // Void return
+                    return;
                 }
 
                 //once authentication was successful, we can create and set a new session
@@ -139,7 +154,10 @@ void authRoutes(crow::App<crow::CookieParser>& app)
                 CROW_LOG_INFO << "Session cookie 'session_id' set for user " << user->id;
 
                 res.code = crow::status::OK;
-                res.write("Logged in successfully.");
+                crow::json::wvalue success_response;
+                success_response["message"] = "Login successful!"; // Consistent message with HTML
+                res.write(success_response.dump()); // Write JSON to response body
+                res.set_header("Content-Type", "application/json"); // Set content type
                 res.end();
                 return;
             }
@@ -147,7 +165,10 @@ void authRoutes(crow::App<crow::CookieParser>& app)
         {
             CROW_LOG_CRITICAL << "Unhandled exception in /login route: " << e.what();
             res.code = crow::status::INTERNAL_SERVER_ERROR;
-            res.write("An unexpected error occurred during login.");
+            crow::json::wvalue error_json;
+            error_json["message"] = "An unexpected error occurred";
+            res.write(error_json.dump());
+            res.set_header("Content-Type", "application/json");
             res.end();
             return;
         }
@@ -168,7 +189,10 @@ void authRoutes(crow::App<crow::CookieParser>& app)
         cookie_ctx.set_cookie("sessionID", "").path("/").max_age(0).httponly();
 
         res.code = crow::status::OK;
-        res.write("Logged out successfully.");
+        crow::json::wvalue success_response;
+        success_response["message"] = "Logged out successfully!"; // Consistent message
+        res.write(success_response.dump());
+        res.set_header("Content-Type", "application/json");
         res.end();
         return;
     });
