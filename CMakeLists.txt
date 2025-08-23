@@ -28,4 +28,5 @@ target_include_directories(Todo PUBLIC
         ${CMAKE_SOURCE_DIR}/routes
         ${CMAKE_SOURCE_DIR}/utilities
         ${CMAKE_SOURCE_DIR}/auth
+        ${CMAKE_SOURCE_DIR}/frontend
 )

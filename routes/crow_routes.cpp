@@ -3,15 +3,13 @@
 #include "db_functions.h"
 #include "AuthHandle.h"
 
-
-
 void taskRoutes(crow::App<crow::CookieParser>& app)
 {
 
     CROW_ROUTE(app, "/")
      ([]()
     {
-        std::string html = utilities::readFile("templates/page4.html");
+        std::string html = utilities::readFile("../frontend/page4.html");
          if (html.empty())
          {
             CROW_LOG_ERROR << "HTML file was not found.";
@@ -20,6 +18,28 @@ void taskRoutes(crow::App<crow::CookieParser>& app)
 
          return crow::response(crow::status::OK, "text/html", html);
 
+    });
+
+    CROW_ROUTE(app, "/frontend/style.css")
+    ([](const crow::request& req)
+    {
+        std::string css = utilities::readFile("../frontend/style.css");
+        if (css.empty())
+        {
+            return crow::response(crow::status::NOT_FOUND, "CSS file not found");
+        }
+        return crow::response(crow::status::OK, "text/css", css);
+    });
+
+    CROW_ROUTE(app, "/frontend/script.js")
+    ([](const crow::request& req)
+    {
+        std::string js = utilities::readFile("../frontend/script.js");
+        if (js.empty())
+        {
+            return crow::response(crow::status::NOT_FOUND, "JS file not found");
+        }
+        return crow::response(crow::status::OK, "application/javascript", js);
     });
 
     //this is psudo middleware

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Task App</title>
+  <link href="../frontend/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <div id="authSection" class="auth-container">
+      <h2 id="authTitle">Login</h2>
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Password">
+
+      <button id="authButton">Login</button>
+
+      <div class="auth-toggle">
+        Don't have an account? <a href="#" id="toggleAuth">Register</a>
+      </div>
+
+      <div id="authMessage" class="message"></div>
+  </div>
+
+  <div id="taskAppSection" style="display:none;">
+      <div class="header">
+        <div class="user-greeting">Hello, <span id="usernameDisplay">Guest</span>!</div>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+      </div>
+
+      <div class="container">
+        <h2>My Tasks</h2>
+        <div class="task-form">
+          <input type="text" id="newTaskDescription" placeholder="Add a new task...">
+          <button id="addTaskBtn">Add Task</button>
+        </div>
+
+        <div class="task-list-container">
+          <ul id="taskList" class="task-list">
+          </ul>
+        </div>
+      </div>
+  </div>
+
+  <div id="taskModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <div class="modal-body">
+        <h2 id="modalTaskTitle">Task Details</h2>
+        <p><strong>ID:</strong> <span id="modalTaskId"></span></p>
+
+        <label for="modalTaskDescription">Description:</label>
+        <input type="text" id="modalTaskDescription">
+
+        <label for="modalTaskStatus">Status:</label>
+        <select id="modalTaskStatus">
+          <option value="todo">Todo</option>
+          <option value="inprogress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+
+        <div style="margin-top: 20px; display: flex; justify-content: space-around; gap: 10px;">
+          <button class="extra-btn">Due Date</button>
+          <button class="extra-btn">Reminders</button>
+          <button class="extra-btn">Notes</button>
+          <button class="extra-btn">Tags</button>
+        </div>
+
+        <div class="modal-buttons">
+          <button id="updateTaskBtn" class="update-btn">Update Task</button>
+          <button id="deleteTaskBtn" class="delete-btn">Delete Task</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="../frontend/script.js" defer></script>
+</body>
+</html>

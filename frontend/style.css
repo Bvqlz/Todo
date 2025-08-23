@@ -1,0 +1,319 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 25px; /* Increased padding */
+    background-color: #f4f7f6;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1.1em; /* Base font size increased */
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 35px; /* Increased padding */
+    border-radius: 10px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15); /* Slightly larger shadow */
+    width: 100%;
+    max-width: 700px; /* Increased max-width */
+    margin-bottom: 25px; /* Increased margin */
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px; /* Increased margin */
+    width: 100%;
+    max-width: 700px; /* Increased max-width */
+}
+
+.user-greeting {
+    font-size: 2em; /* Made bigger */
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.logout-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 14px 28px; /* Made bigger */
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1em; /* Made bigger */
+    transition: background-color 0.3s ease;
+}
+.logout-btn:hover {
+    background-color: #c0392b;
+}
+
+/* Form styling */
+.task-form {
+    display: flex;
+    gap: 12px; /* Increased gap */
+    margin-bottom: 25px; /* Increased margin */
+}
+.task-form input[type="text"] {
+    flex-grow: 1;
+    padding: 14px; /* Increased padding */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1.1em; /* Increased font size */
+}
+.task-form button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 14px 22px; /* Increased padding */
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1em; /* Increased font size */
+    transition: background-color 0.3s ease;
+}
+.task-form button:hover {
+    background-color: #218838;
+}
+
+/* Task list container with scroll */
+.task-list-container {
+    max-height: 450px; /* Fixed height for scrollbar */
+    overflow-y: auto; /* Adds scrollbar when content overflows */
+    border: 1px solid #eee;
+    border-radius: 8px; /* Slightly more rounded */
+    padding: 15px; /* Increased padding */
+    background-color: #f9f9f9;
+}
+
+.task-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.task-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px; /* Increased padding */
+    border-bottom: 1px solid #eee;
+    cursor: pointer; /* Indicate it's clickable */
+    transition: background-color 0.2s ease;
+}
+.task-item:last-child {
+    border-bottom: none;
+}
+.task-item:hover {
+    background-color: #eef;
+}
+
+.task-description {
+    flex-grow: 1;
+    margin-right: 15px; /* Increased margin */
+    word-wrap: break-word; /* Wrap long words */
+    white-space: normal; /* Allow normal white space handling */
+    overflow-wrap: break-word; /* Another property for wrapping */
+    font-size: 1.1em; /* Increased font size */
+}
+.task-status {
+    font-weight: bold;
+    padding: 6px 10px; /* Added padding to status tag */
+    border-radius: 4px; /* Rounded corners for status tag */
+    font-size: 0.9em; /* Adjusted relative to new base font size */
+    white-space: nowrap; /* Prevent status text from wrapping */
+}
+
+/* Color coding for status tags */
+.status-todo {
+    background-color: #ffcccc; /* Light red */
+    color: #cc0000; /* Darker red */
+}
+.status-inprogress {
+    background-color: #fff3cd; /* Light orange/yellow */
+    color: #856404; /* Darker orange/yellow */
+}
+.status-completed {
+    background-color: #d4edda; /* Light green */
+    color: #155724; /* Darker green */
+}
+
+/* Modal styling */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.5); /* Black w/ more opacity */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 35px; /* Increased padding */
+    border: 1px solid #888;
+    border-radius: 12px; /* More rounded */
+    width: 90%; /* Increased width */
+    max-width: 600px; /* Increased max-width */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4); /* Larger shadow */
+    position: relative;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 32px; /* Made bigger */
+    font-weight: bold;
+    position: absolute;
+    top: 15px; /* Adjusted position */
+    right: 25px; /* Adjusted position */
+}
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-body h2 {
+    margin-top: 0;
+    color: #333;
+    font-size: 1.8em; /* Made bigger */
+}
+.modal-body p {
+    margin-bottom: 12px; /* Increased margin */
+    font-size: 1.1em;
+}
+.modal-body label {
+    display: block;
+    margin-top: 18px; /* Increased margin */
+    font-weight: bold;
+    color: #555;
+    font-size: 1.1em;
+}
+.modal-body input[type="text"],
+.modal-body select {
+    width: calc(100% - 28px); /* Account for padding */
+    padding: 12px; /* Increased padding */
+    margin-top: 8px; /* Increased margin */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1.1em; /* Increased font size */
+}
+.modal-buttons {
+    margin-top: 30px; /* Increased margin */
+    display: flex;
+    justify-content: space-between;
+    gap: 12px; /* Increased gap */
+}
+.modal-buttons button {
+    padding: 12px 22px; /* Increased padding */
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1em; /* Increased font size */
+    transition: background-color 0.3s ease;
+}
+.modal-buttons .update-btn {
+    background-color: #007bff;
+    color: white;
+}
+.modal-buttons .update-btn:hover {
+    background-color: #0056b3;
+}
+.modal-buttons .delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+.modal-buttons .delete-btn:hover {
+    background-color: #c82333;
+}
+.modal-buttons .extra-btn {
+    background-color: #6c757d;
+    color: white;
+}
+.modal-buttons .extra-btn:hover {
+    background-color: #5a6268;
+}
+
+/* Login/Register Form styling */
+.auth-container {
+    display: flex;
+    flex-direction: column;
+    gap: 22px; /* Increased gap */
+    width: 100%;
+    max-width: 500px; /* Increased max-width */
+    margin: 60px auto; /* Increased margin */
+    padding: 35px; /* Increased padding */
+    background-color: #ffffff;
+    border-radius: 12px; /* More rounded */
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15); /* Slightly larger shadow */
+}
+
+.auth-container h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 30px; /* Increased margin */
+    font-size: 2em; /* Made bigger */
+}
+
+.auth-container input[type="text"],
+.auth-container input[type="password"] {
+    width: calc(100% - 28px); /* Account for padding */
+    padding: 14px; /* Increased padding */
+    margin-bottom: 18px; /* Increased margin */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1.1em; /* Increased font size */
+}
+
+.auth-container button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 14px 22px; /* Increased padding */
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.2em; /* Increased font size */
+    transition: background-color 0.3s ease;
+}
+.auth-container button:hover {
+    background-color: #0056b3;
+}
+
+.auth-toggle {
+    text-align: center;
+    margin-top: 18px; /* Increased margin */
+    font-size: 1em; /* Adjusted relative to new base font size */
+    color: #555;
+}
+
+.auth-toggle a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.message {
+    text-align: center;
+    margin-top: 25px; /* Increased margin */
+    padding: 12px; /* Increased padding */
+    border-radius: 6px;
+    font-size: 1em; /* Adjusted relative to new base font size */
+}
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
