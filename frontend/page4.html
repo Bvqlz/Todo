@@ -3,77 +3,167 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Task App</title>
+  <title>TaskFlow - Modern Todo Management</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="../frontend/style.css" rel="stylesheet">
 </head>
 <body>
-
+<div class="app-container">
+  <!-- Authentication Section -->
   <div id="authSection" class="auth-container">
-      <h2 id="authTitle">Login</h2>
-      <input type="text" id="username" placeholder="Username">
-      <input type="password" id="password" placeholder="Password">
+    <div class="auth-header">
+      <h1><i class="fas fa-tasks"></i> TaskFlow</h1>
+      <p id="authSubtitle">Sign in to manage your tasks</p>
+    </div>
 
-      <button id="authButton">Login</button>
+    <div id="authMessage" class="message" style="display: none;"></div>
 
-      <div class="auth-toggle">
-        Don't have an account? <a href="#" id="toggleAuth">Register</a>
+    <form id="authForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" required>
       </div>
 
-      <div id="authMessage" class="message"></div>
-  </div>
-
-  <div id="taskAppSection" style="display:none;">
-      <div class="header">
-        <div class="user-greeting">Hello, <span id="usernameDisplay">Guest</span>!</div>
-        <button id="logoutBtn" class="logout-btn">Logout</button>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required>
       </div>
 
-      <div class="container">
-        <h2>My Tasks</h2>
-        <div class="task-form">
-          <input type="text" id="newTaskDescription" placeholder="Add a new task...">
-          <button id="addTaskBtn">Add Task</button>
-        </div>
+      <button type="submit" class="auth-button" id="authButton">
+        <i class="fas fa-sign-in-alt"></i>
+        <span id="authButtonText">Sign In</span>
+      </button>
+    </form>
 
-        <div class="task-list-container">
-          <ul id="taskList" class="task-list">
-          </ul>
-        </div>
-      </div>
-  </div>
-
-  <div id="taskModal" class="modal">
-    <div class="modal-content">
-      <span class="close-button">&times;</span>
-      <div class="modal-body">
-        <h2 id="modalTaskTitle">Task Details</h2>
-        <p><strong>ID:</strong> <span id="modalTaskId"></span></p>
-
-        <label for="modalTaskDescription">Description:</label>
-        <input type="text" id="modalTaskDescription">
-
-        <label for="modalTaskStatus">Status:</label>
-        <select id="modalTaskStatus">
-          <option value="todo">Todo</option>
-          <option value="inprogress">In Progress</option>
-          <option value="completed">Completed</option>
-        </select>
-
-        <div style="margin-top: 20px; display: flex; justify-content: space-around; gap: 10px;">
-          <button class="extra-btn">Due Date</button>
-          <button class="extra-btn">Reminders</button>
-          <button class="extra-btn">Notes</button>
-          <button class="extra-btn">Tags</button>
-        </div>
-
-        <div class="modal-buttons">
-          <button id="updateTaskBtn" class="update-btn">Update Task</button>
-          <button id="deleteTaskBtn" class="delete-btn">Delete Task</button>
-        </div>
-      </div>
+    <div class="auth-toggle">
+      Don't have an account?
+      <button type="button" id="toggleAuth">Create one</button>
     </div>
   </div>
 
-<script src="../frontend/script.js" defer></script>
+  <!-- Main Application -->
+  <div id="mainApp" class="main-app">
+    <div class="app-header">
+      <div class="user-info">
+        <h2>Welcome, <span id="usernameDisplay">User</span>!</h2>
+        <p>Let's get things done today</p>
+      </div>
+      <div class="header-actions">
+        <button id="logoutBtn" class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <div class="app-content">
+      <!-- Task Input -->
+      <div class="task-input-section">
+        <div class="task-input-form">
+          <input
+                  type="text"
+                  id="taskInput"
+                  class="task-input"
+                  placeholder="What needs to be done?"
+                  maxlength="200"
+          >
+          <button id="addTaskBtn" class="add-task-btn">
+            <i class="fas fa-plus"></i>
+            Add Task
+          </button>
+        </div>
+      </div>
+
+      <!-- Task Statistics -->
+      <div class="task-stats">
+        <div class="stat-card todo">
+          <div class="stat-number" id="todoCount">0</div>
+          <div class="stat-label">To Do</div>
+        </div>
+        <div class="stat-card inprogress">
+          <div class="stat-number" id="inprogressCount">0</div>
+          <div class="stat-label">In Progress</div>
+        </div>
+        <div class="stat-card completed">
+          <div class="stat-number" id="completedCount">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalCount">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+      </div>
+
+      <!-- Task Filters -->
+      <div class="task-filters">
+        <button class="filter-btn active" data-filter="all">All Tasks</button>
+        <button class="filter-btn" data-filter="todo">To Do</button>
+        <button class="filter-btn" data-filter="inprogress">In Progress</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+      </div>
+
+      <!-- Task List -->
+      <div class="task-list-container">
+        <ul id="taskList" class="task-list">
+          <div class="empty-state">
+            <i class="fas fa-clipboard-list"></i>
+            <h3>No tasks yet</h3>
+            <p>Add a task above to get started!</p>
+          </div>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div id="taskModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Task Details</h3>
+      <button class="modal-close" id="modalClose">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-form-group">
+        <label>Task ID</label>
+        <input type="text" id="modalTaskId" disabled>
+      </div>
+
+      <div class="modal-form-group">
+        <label for="modalTaskDescription">Description</label>
+        <input type="text" id="modalTaskDescription" maxlength="200">
+      </div>
+
+      <div class="modal-form-group">
+        <label for="modalTaskStatus">Status</label>
+        <select id="modalTaskStatus">
+          <option value="todo">To Do</option>
+          <option value="inprogress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-secondary" id="modalCancel">
+        <i class="fas fa-times"></i>
+        Cancel
+      </button>
+      <button class="modal-btn modal-btn-danger" id="deleteTaskBtn">
+        <i class="fas fa-trash"></i>
+        Delete
+      </button>
+      <button class="modal-btn modal-btn-primary" id="updateTaskBtn">
+        <i class="fas fa-save"></i>
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../frontend/script.js"></script>
 </body>
 </html>

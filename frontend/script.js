@@ -1,321 +1,582 @@
-// Global UI elements
+// ===== GLOBAL STATE MANAGEMENT =====
+let currentUser = null;
+let tasks = [];
+let currentFilter = 'all';
+let currentTaskId = null;
+let isRegisterMode = false;
+
+// ===== DOM ELEMENT REFERENCES =====
 const authSection = document.getElementById('authSection');
-const taskAppSection = document.getElementById('taskAppSection');
-const usernameDisplay = document.getElementById('usernameDisplay');
-const authMessage = document.getElementById('authMessage'); // For auth related messages
-const authTitle = document.getElementById('authTitle');
+const mainApp = document.getElementById('mainApp');
+const authForm = document.getElementById('authForm');
+const authMessage = document.getElementById('authMessage');
+const authSubtitle = document.getElementById('authSubtitle'); // changes on login or register
 const authButton = document.getElementById('authButton');
-const toggleAuthLink = document.getElementById('toggleAuth');
+const authButtonText = document.getElementById('authButtonText');  // changes on login or register
+const toggleAuthBtn = document.getElementById('toggleAuth');  // changes on login or register
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
-
-// Task related UI elements
-const taskList = document.getElementById('taskList');
-const newTaskDescriptionInput = document.getElementById('newTaskDescription');
+const usernameDisplay = document.getElementById('usernameDisplay'); // changes on which user is signed in
+const logoutBtn = document.getElementById('logoutBtn');
+const taskInput = document.getElementById('taskInput');
 const addTaskBtn = document.getElementById('addTaskBtn');
-gi
-// Modal related UI elements
+const taskList = document.getElementById('taskList');
+const filterBtns = document.querySelectorAll('.filter-btn'); // firs
 const taskModal = document.getElementById('taskModal');
-const closeButton = taskModal.querySelector('.close-button');
+const modalClose = document.getElementById('modalClose');
+const modalCancel = document.getElementById('modalCancel');
 const modalTaskId = document.getElementById('modalTaskId');
-const modalTaskDescriptionInput = document.getElementById('modalTaskDescription');
-const modalTaskStatusSelect = document.getElementById('modalTaskStatus');
+const modalTaskDescription = document.getElementById('modalTaskDescription');
+const modalTaskStatus = document.getElementById('modalTaskStatus');
 const updateTaskBtn = document.getElementById('updateTaskBtn');
 const deleteTaskBtn = document.getElementById('deleteTaskBtn');
 
-let currentTaskId = null; // To store the ID of the task currently in the modal
-let isRegisterMode = false; // Flag to track auth mode
+// ===== UTILITY FUNCTIONS =====
 
-// Helper function to display authentication messages
-function showAuthMessage(msg, isError = false) {
-    authMessage.textContent = msg;
-    authMessage.className = `message ${isError ? 'error' : 'success'}`;
-    // Optionally hide after some time if it's a success message
-    if (!isError) {
-        setTimeout(() => {
-            authMessage.textContent = '';
-            authMessage.className = 'message';
-        }, 3000); // Hide after 3 seconds
-    }
+/**
+ * Display success or error messages in the auth section
+ * @param {string} message - Message to display
+ * @param {string} type - 'success' or 'error'
+ */
+function showMessage(message, type = 'success') {
+    authMessage.className = `message ${type}`;
+    authMessage.innerHTML = `
+    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+    ${message}
+  `;
+    authMessage.style.display = 'flex'; // this will have the icon and the text next each other. More importantly makes the message visible.
+
+    // Auto-hide success/error messages after 5 seconds
+    setTimeout(() => {
+        authMessage.style.display = 'none';
+    }, 5000);
 }
 
-// Function to update UI based on login status
-function updateUIForAuth(loggedIn, username = '') {
-    if (loggedIn) {
-        authSection.style.display = 'none';
-        taskAppSection.style.display = 'block';
-        usernameDisplay.textContent = username;
-        fetchTasks(); // Fetch tasks once logged in
+/**
+ * Set loading state for buttons with spinner
+ * @param {HTMLElement} element - Button element
+ * @param {boolean} loading - Loading state
+ */
+function setLoading(element, loading) {
+    if (loading) {
+        element.disabled = true; // we disable the button when its loading. User cannot click it
+        element.innerHTML = '<div class="loading-spinner"></div> Loading...';
     } else {
-        authSection.style.display = 'flex'; // Use flex for centering login form
-        taskAppSection.style.display = 'none';
-        usernameDisplay.textContent = 'Guest'; // Reset
-        authTitle.textContent = 'Login';
-        authButton.textContent = 'Login';
-        toggleAuthLink.textContent = 'Register';
-        usernameInput.value = '';
-        passwordInput.value = '';
-        showAuthMessage('', false); // Clear any previous auth messages
-        taskList.innerHTML = ''; // Clear tasks on logout
+        element.disabled = false;
+        element.innerHTML = element.dataset.originalText || element.textContent;
     }
 }
 
-// Check auth status on page load
-async function checkAuthStatus() {
-    try {
-        const response = await fetch('/me');
-        const data = await response.json(); // Always expect JSON
-        if (response.ok) {
-            updateUIForAuth(true, data.username); // Assuming /me returns { username: "..." }
-        } else {
-            // If /me returns 401 or other error, show message but remain on auth screen
-            updateUIForAuth(false);
-            showAuthMessage(data.message || 'Please log in to manage your tasks.', true);
-        }
-    } catch (error) {
-        console.error('Error checking auth status:', error);
-        updateUIForAuth(false);
-        showAuthMessage('Network error: Could not connect to the server.', true);
-    }
+/**
+ * Update task statistics counters
+ */
+function updateStats() {
+    const todoTasks = tasks.filter(task => task.status === 'todo');
+    const inprogressTasks = tasks.filter(task => task.status === 'inprogress');
+    const completedTasks = tasks.filter(task => task.status === 'completed');
+
+    document.getElementById('todoCount').textContent = todoTasks.length;
+    document.getElementById('inprogressCount').textContent = inprogressTasks.length;
+    document.getElementById('completedCount').textContent = completedTasks.length;
+    document.getElementById('totalCount').textContent = tasks.length;
 }
-document.addEventListener('DOMContentLoaded', checkAuthStatus);
 
+/**
+ * Render tasks in the task list with filtering
+ */
+function renderTasks() {
+    const filteredTasks = currentFilter === 'all' ? tasks : tasks.filter(task => task.status === currentFilter);
 
-// --- Authentication Logic ---
-toggleAuthLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    isRegisterMode = !isRegisterMode;
-    authTitle.textContent = isRegisterMode ? 'Register' : 'Login';
-    authButton.textContent = isRegisterMode ? 'Register' : 'Login';
-    toggleAuthLink.textContent = isRegisterMode ? 'Login' : 'Register';
-    showAuthMessage('', false); // Clear message on toggle
-    usernameInput.value = ''; // Clear inputs
-    passwordInput.value = '';
-});
-
-authButton.addEventListener('click', async () => {
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value.trim();
-
-    if (!username || !password) {
-        showAuthMessage('Please enter both username and password.', true);
+    // Show empty state if no tasks
+    if (filteredTasks.length === 0) {
+        taskList.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-clipboard-list"></i>
+        <h3>${currentFilter === 'all' ? 'No tasks yet' : `No ${currentFilter} tasks`}</h3>
+        <p>${currentFilter === 'all' ? 'Add a task above to get started!' : `No tasks in ${currentFilter} status`}</p>
+      </div>
+    `;
+        updateStats();
         return;
     }
 
-    const endpoint = isRegisterMode ? '/register' : '/login';
+    // Render task items
+    taskList.innerHTML = filteredTasks.map(task => `
+    <li class="task-item" data-task-id="${task.id}">
+      <div class="task-status-indicator ${task.status}"></div>
+      <div class="task-content">
+        <span class="task-description ${task.status}">${escapeHtml(task.description)}</span>
+        <span class="task-status-badge ${task.status}">${task.status}</span>
+      </div>
+    </li>
+  `).join('');
+
+    // Add click listeners to task items
+    document.querySelectorAll('.task-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const taskId = parseInt(item.dataset.taskId); // in our json object the backend returns everything as a string. This turns it into a number
+            const task = tasks.find(t => t.id === taskId);
+            if (task) openTaskModal(task);
+        });
+    });
+
+    updateStats();
+}
+
+/**
+ * Escape HTML to prevent XSS attacks
+ * @param {string} text - Text to escape
+ * @returns {string} - Escaped text
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div'); // this is to prevent running html code in our task description.
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ===== AUTHENTICATION FUNCTIONS =====
+
+/**
+ * Toggle between login and register mode
+ */
+function toggleAuthMode() {
+    isRegisterMode = !isRegisterMode;
+
+    if (isRegisterMode) {
+        authSubtitle.textContent = 'Create your account';
+        authButtonText.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+        toggleAuthBtn.textContent = 'Sign in instead';
+    } else {
+        authSubtitle.textContent = 'Sign in to manage your tasks';
+        authButtonText.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+        toggleAuthBtn.textContent = 'Create one';
+    }
+
+    // Clear form fields and messages
+    usernameInput.value = '';
+    passwordInput.value = '';
+    authMessage.style.display = 'none';
+}
+
+/**
+ * Handle authentication (login or register)
+ * @param {Event} e - Form submit event
+ */
+async function handleAuth(e) {
+    e.preventDefault();
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    // Validate inputs
+    if (!username || !password) {
+        showMessage('Please fill in all fields', 'error');
+        return;
+    }
+
+    if (username.length < 3) {
+        showMessage('Username must be at least 3 characters long', 'error');
+        return;
+    }
+
+    if (password.length < 6) {
+        showMessage('Password must be at least 6 characters long', 'error');
+        return;
+    }
+
+    // Set loading state
+    authButton.dataset.originalText = authButtonText.innerHTML;
+    setLoading(authButton, true);
+
     try {
+        const endpoint = isRegisterMode ? '/register' : '/login';
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
-        const data = await response.json(); // Even if error, try to parse JSON for message
+
+        const data = await response.json();
 
         if (response.ok) {
-            showAuthMessage(data.message || (isRegisterMode ? 'Registration successful!' : 'Login successful!'), false);
-            usernameInput.value = ''; // Clear fields on success
-            passwordInput.value = '';
+            showMessage(data.message || (isRegisterMode ? 'Account created successfully!' : 'Welcome back!'));
 
-            if (!isRegisterMode) { // If it was a login, update UI immediately
-                updateUIForAuth(true, username);
-            } else { // If it was a registration, switch to login form
-                isRegisterMode = false;
-                authTitle.textContent = 'Login';
-                authButton.textContent = 'Login';
-                toggleAuthLink.textContent = 'Register';
-            }
-        } else {
-            showAuthMessage(data.message || data.error || 'An unknown error occurred.', true);
-        }
-    } catch (error) {
-        console.error('Authentication error:', error);
-        showAuthMessage('Network error or server unavailable.', true);
-    }
-});
-
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-    try {
-        const response = await fetch('/logout', { method: 'POST' });
-        const data = await response.json(); // Always expect JSON response
-        if (response.ok) {
-            showAuthMessage(data.message || 'Logged out successfully!', false);
-            updateUIForAuth(false);
-        } else {
-            console.error('Logout failed:', response.status, data.message || data.error || 'Unknown error');
-            showAuthMessage(data.message || 'Failed to log out.', true);
-        }
-    } catch (error) {
-        console.error('Error during logout:', error);
-        showAuthMessage('Network error during logout.', true);
-    }
-});
-
-// --- Task Management Logic ---
-
-// Function to fetch and display tasks
-async function fetchTasks() {
-    try {
-        const response = await fetch('/tasks');
-        const data = await response.json(); // Expect JSON array of tasks or an error object
-
-        taskList.innerHTML = ''; // Clear existing tasks
-
-        if (response.ok) {
-            if (data.tasks && data.tasks.length > 0) {
-                data.tasks.forEach(task => {
-                    const li = document.createElement('li');
-                    li.className = 'task-item';
-                    li.dataset.taskId = task.id; // Store ID for easy access
-
-                    const statusClass = `status-${task.status}`; // Determine the status class
-                    li.innerHTML = `
-              <span class="task-description">${task.description}</span>
-              <span class="task-status ${statusClass}">${task.status}</span>
-            `;
-                    li.addEventListener('click', () => openTaskModal(task)); // Make it clickable
-                    taskList.appendChild(li);
-                });
+            if (!isRegisterMode) {
+                // Login successful - show main app
+                currentUser = { username };
+                showMainApp();
             } else {
-                taskList.innerHTML = '<li>No tasks yet! Add one above.</li>';
+                // Registration successful - switch to login mode
+                toggleAuthMode();
+                showMessage('Account created! Please sign in with your credentials.');
             }
-        } else if (response.status === 401) {
-            // Unauthorized, likely session expired
-            updateUIForAuth(false);
-            showAuthMessage(data.message || 'Session expired. Please log in again to view tasks.', true);
         } else {
-            console.error('Failed to fetch tasks:', response.status, data.message || data.error || 'Unknown error');
-            taskList.innerHTML = `<li>Error loading tasks: ${data.message || data.error || 'Unknown error'}</li>`;
+            showMessage(data.message || 'Authentication failed', 'error');
         }
     } catch (error) {
-        console.error('Error fetching tasks:', error);
-        taskList.innerHTML = '<li>Network error. Could not connect to the server to fetch tasks.</li>';
+        console.error('Auth error:', error);
+        showMessage('Network error. Please check your connection and try again.', 'error');
+    } finally {
+        setLoading(authButton, false);
     }
 }
 
-// Add Task
-addTaskBtn.addEventListener('click', async () => {
-    const description = newTaskDescriptionInput.value.trim();
-    if (description === '') {
-        alert('Task description cannot be empty.'); // Use a simple alert for task-specific input validation
+/**
+ * Handle user logout
+ */
+async function logout() {
+    try {
+        const response = await fetch('/logout', { method: 'POST' });
+        const data = await response.json();
+
+        if (response.ok) {
+            showMessage(data.message || 'Logged out successfully');
+        } else {
+            console.error('Logout failed:', data.message);
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+    } finally {
+        // Always clear local state and show auth section
+        currentUser = null;
+        tasks = [];
+        showAuthSection();
+    }
+}
+
+/**
+ * Show authentication section
+ */
+function showAuthSection() {
+    authSection.style.display = 'block';
+    mainApp.style.display = 'none';
+
+    // Clear form fields
+    usernameInput.value = '';
+    passwordInput.value = '';
+    authMessage.style.display = 'none';
+
+    // Reset to login mode
+    if (isRegisterMode) {
+        toggleAuthMode();
+    }
+}
+
+/**
+ * Show main application
+ */
+function showMainApp() {
+    authSection.style.display = 'none';
+    mainApp.style.display = 'block';
+    usernameDisplay.textContent = currentUser.username;
+
+    // Load user's tasks
+    fetchTasks();
+}
+
+// ===== TASK MANAGEMENT FUNCTIONS =====
+
+/**
+ * Fetch tasks from the server
+ */
+async function fetchTasks() {
+    try {
+        const response = await fetch('/tasks');
+        const data = await response.json();
+
+        if (response.ok) {
+            tasks = data.tasks || [];
+            renderTasks();
+        } else if (response.status === 401) {
+            // Session expired
+            showAuthSection();
+            showMessage(data.message || 'Session expired. Please login again.', 'error');
+        } else {
+            console.error('Failed to fetch tasks:', data.message);
+            showMessage('Failed to load tasks. Please refresh the page.', 'error');
+        }
+    } catch (error) {
+        console.error('Fetch tasks error:', error);
+        showMessage('Network error while loading tasks. Please check your connection.', 'error');
+    }
+}
+
+/**
+ * Add a new task
+ */
+async function addTask() {
+    const description = taskInput.value.trim();
+
+    if (!description) {
+        taskInput.focus();
         return;
     }
+
+    if (description.length > 200) {
+        showMessage('Task description is too long (max 200 characters)', 'error');
+        return;
+    }
+
+    // Set loading state
+    const originalText = addTaskBtn.innerHTML;
+    setLoading(addTaskBtn, true);
 
     try {
         const response = await fetch('/tasks', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ description, status: 'todo' }) // Default status
+            body: JSON.stringify({ description, status: 'todo' })
         });
-        const data = await response.json(); // Expect JSON response
+
+        const data = await response.json(); // does data return everything about the task?
 
         if (response.ok) {
-            newTaskDescriptionInput.value = ''; // Clear input
-            fetchTasks(); // Reload tasks
-            // No specific message for add task, success is implied by list refresh
+            taskInput.value = '';
+            await fetchTasks(); // Refresh tasks
         } else if (response.status === 401) {
-            updateUIForAuth(false);
-            showAuthMessage(data.message || 'Authentication required to add task. Please log in.', true);
+            showAuthSection();
+            showMessage(data.message || 'Authentication required', 'error');
         } else {
-            alert('Failed to add task: ' + (data.message || data.error || 'Unknown error.'));
-            console.error('Failed to add task:', response.status, data);
+            showMessage(data.message || 'Failed to add task', 'error');
         }
     } catch (error) {
-        console.error('Error adding task:', error);
-        alert('Network error adding task.');
+        console.error('Add task error:', error);
+        showMessage('Network error while adding task', 'error');
+    } finally {
+        addTaskBtn.innerHTML = originalText;
+        addTaskBtn.disabled = false;
     }
-});
-
-// --- Modal Logic ---
-function openTaskModal(task) {
-    currentTaskId = task.id;
-    modalTaskId.textContent = task.id;
-    modalTaskDescriptionInput.value = task.description;
-    modalTaskStatusSelect.value = task.status; // Set the selected option
-    taskModal.style.display = 'flex'; // Show the modal
 }
 
-function closeTaskModal() {
-    taskModal.style.display = 'none'; // Hide the modal
-    currentTaskId = null; // Clear current task ID
-}
-
-closeButton.addEventListener('click', closeTaskModal);
-
-// Close modal if user clicks outside of it
-window.addEventListener('click', (event) => {
-    if (event.target === taskModal) {
-        closeTaskModal();
-    }
-});
-
-// Update Task in Modal
-updateTaskBtn.addEventListener('click', async () => {
+/**
+ * Update an existing task
+ */
+async function updateTask() {
     if (!currentTaskId) return;
 
-    const newDescription = modalTaskDescriptionInput.value.trim();
-    const newStatus = modalTaskStatusSelect.value;
+    const description = modalTaskDescription.value.trim();
+    const status = modalTaskStatus.value;
 
-    if (!newDescription) {
-        alert('Description cannot be empty!');
+    if (!description) {
+        modalTaskDescription.focus();
+        showMessage('Task description cannot be empty', 'error');
         return;
     }
+
+    if (description.length > 200) {
+        showMessage('Task description is too long (max 200 characters)', 'error');
+        return;
+    }
+
+    // Set loading state
+    const originalText = updateTaskBtn.innerHTML;
+    setLoading(updateTaskBtn, true);
 
     try {
         const response = await fetch(`/tasks/${currentTaskId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ description: newDescription, status: newStatus })
+            body: JSON.stringify({ description, status })
         });
-        const data = await response.json(); // Expect JSON response
+
+        const data = await response.json();
 
         if (response.ok) {
             closeTaskModal();
-            fetchTasks(); // Reload tasks to show updated data
-            // No specific message for update, success is implied by list refresh
+            await fetchTasks(); // Refresh tasks
         } else if (response.status === 401) {
-            updateUIForAuth(false);
-            showAuthMessage(data.message || 'Authentication required to update task. Please log in.', true);
-            closeTaskModal(); // Close modal on auth error
+            showAuthSection();
+            showMessage(data.message || 'Authentication required', 'error');
+            closeTaskModal();
         } else {
-            alert('Failed to update task: ' + (data.message || data.error || 'Unknown error.'));
-            console.error('Failed to update task:', response.status, data);
+            showMessage(data.message || 'Failed to update task', 'error');
         }
     } catch (error) {
-        console.error('Error updating task:', error);
-        alert('Network error updating task.');
+        console.error('Update task error:', error);
+        showMessage('Network error while updating task', 'error');
+    } finally {
+        updateTaskBtn.innerHTML = originalText;
+        updateTaskBtn.disabled = false;
     }
-});
+}
 
-// Delete Task in Modal
-deleteTaskBtn.addEventListener('click', async () => {
+/**
+ * Delete a task
+ */
+async function deleteTask() {
     if (!currentTaskId) return;
 
-    if (!confirm(`Are you sure you want to delete task ID: ${currentTaskId}?`)) {
-        return; // User cancelled
+    // Confirm deletion
+    if (!confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+        return;
     }
+
+    // Set loading state
+    const originalText = deleteTaskBtn.innerHTML;
+    setLoading(deleteTaskBtn, true);
 
     try {
         const response = await fetch(`/tasks/${currentTaskId}`, {
             method: 'DELETE'
         });
 
-        // For DELETE, 204 No Content is a common successful response, no JSON body
         if (response.status === 204) {
+            // Success - no content returned
             closeTaskModal();
-            fetchTasks(); // Reload tasks to reflect deletion
-            // No specific message for delete, success is implied by list refresh
+            await fetchTasks(); // Refresh tasks
         } else if (response.status === 401) {
-            const data = await response.json(); // Attempt to read JSON error
-            updateUIForAuth(false);
-            showAuthMessage(data.message || 'Authentication required to delete task. Please log in.', true);
-            closeTaskModal(); // Close modal on auth error
+            const data = await response.json();
+            showAuthSection();
+            showMessage(data.message || 'Authentication required', 'error');
+            closeTaskModal();
         } else {
-            const data = await response.json(); // Still try to parse JSON for other errors
-            alert('Failed to delete task: ' + (data.message || data.error || 'Unknown error.'));
-            console.error('Failed to delete task:', response.status, data);
+            const data = await response.json();
+            showMessage(data.message || 'Failed to delete task', 'error');
         }
     } catch (error) {
-        console.error('Error deleting task:', error);
-        alert('Network error deleting task.');
+        console.error('Delete task error:', error);
+        showMessage('Network error while deleting task', 'error');
+    } finally {
+        deleteTaskBtn.innerHTML = originalText;
+        deleteTaskBtn.disabled = false;
     }
+}
+
+// ===== MODAL FUNCTIONS =====
+
+/**
+ * Open task modal with task data
+ * @param {Object} task - Task object
+ */
+function openTaskModal(task) {
+    currentTaskId = task.id;
+    modalTaskId.value = task.id;
+    modalTaskDescription.value = task.description;
+    modalTaskStatus.value = task.status;
+    taskModal.style.display = 'flex';
+
+    // Focus on description input after modal animation
+    setTimeout(() => modalTaskDescription.focus(), 100);
+}
+
+/**
+ * Close task modal
+ */
+function closeTaskModal() {
+    taskModal.style.display = 'none';
+    currentTaskId = null;
+
+    // Clear any error messages
+    authMessage.style.display = 'none';
+}
+
+/**
+ * Check authentication status on page load
+ */
+async function checkAuthStatus() {
+    try {
+        const response = await fetch('/me');
+        const data = await response.json();
+
+        if (response.ok) {
+            currentUser = { username: data.username };
+            showMainApp();
+        } else {
+            showAuthSection();
+        }
+    } catch (error) {
+        console.error('Auth check error:', error);
+        showAuthSection();
+    }
+}
+
+// ===== EVENT LISTENERS =====
+
+// Authentication events
+authForm.addEventListener('submit', handleAuth);
+toggleAuthBtn.addEventListener('click', toggleAuthMode);
+logoutBtn.addEventListener('click', logout);
+
+// Task input events
+taskInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        addTask();
+    }
+});
+
+addTaskBtn.addEventListener('click', addTask);
+
+// Filter button events
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Update active filter button
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Update filter and re-render tasks
+        currentFilter = btn.dataset.filter;
+        renderTasks();
+    });
+});
+
+// Modal events
+modalClose.addEventListener('click', closeTaskModal);
+modalCancel.addEventListener('click', closeTaskModal);
+updateTaskBtn.addEventListener('click', updateTask);
+deleteTaskBtn.addEventListener('click', deleteTask);
+
+// Close modal when clicking outside
+taskModal.addEventListener('click', (e) => {
+    if (e.target === taskModal) {
+        closeTaskModal();
+    }
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    // Close modal with Escape key
+    if (e.key === 'Escape' && taskModal.style.display === 'flex') {
+        closeTaskModal();
+    }
+});
+
+// ===== INITIALIZATION =====
+
+/**
+ * Initialize the application
+ */
+function initializeApp() {
+    // Check authentication status
+    checkAuthStatus();
+
+    // Add fade-in animation to auth section
+    authSection.style.animation = 'fadeIn 0.5s ease-in';
+
+    // Set focus to username input
+    setTimeout(() => {
+        if (authSection.style.display !== 'none') {
+            usernameInput.focus();
+        }
+    }, 500);
+}
+
+// Start the application when DOM is ready
+document.addEventListener('DOMContentLoaded', initializeApp);
+
+// Handle page visibility changes (refresh tasks when tab becomes visible)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && currentUser && mainApp.style.display !== 'none') {
+        fetchTasks();
+    }
+});
+
+// Handle online/offline status
+window.addEventListener('online', () => {
+    if (currentUser && mainApp.style.display !== 'none') {
+        fetchTasks();
+    }
+});
+
+window.addEventListener('offline', () => {
+    showMessage('You are currently offline. Some features may not work.', 'error');
 });
