@@ -1,4 +1,4 @@
-# TaskFlow - C++ REST API Todo Application
+# C++ REST API Todo Application
 
 A full-stack todo list application built with C++ backend using the Crow framework and a responsive JavaScript frontend. This project demonstrates CRUD operations, user authentication, and modern web development practices using C++ for server-side development.
 
