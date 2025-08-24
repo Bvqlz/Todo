@@ -10,7 +10,7 @@ A full-stack todo list application built with C++ backend using the Crow framewo
 - **Protected Routes** requiring authentication
 - **Automatic Session Validation** on page load
 
-### 📝 Task Management (CRUD Operations)
+### Task Management (CRUD Operations)
 - **Create** new tasks with descriptions
 - **Read** all tasks with filtering capabilities
 - **Update** task descriptions and status
@@ -47,7 +47,7 @@ A full-stack todo list application built with C++ backend using the Crow framewo
 - **Single Page Application** - Content loading without page refreshes
 - **Session-based Authentication** - Server-side session management
   
-## 📡 API Endpoints
+## API Endpoints
 
 ### Authentication Routes
 ```
