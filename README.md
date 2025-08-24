@@ -68,7 +68,7 @@ DELETE /tasks/{id}        - Delete task
 
 ### Static File Routes
 ```
-GET    /                  - Serve main HTML page
+GET    /                   - Serve main HTML page
 GET    /frontend/style.css - Serve CSS stylesheet
 GET    /frontend/script.js - Serve JavaScript application
 ```
