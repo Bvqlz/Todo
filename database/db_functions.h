@@ -26,7 +26,4 @@ namespace database
     std::optional<int> createUser(const std::string& username, const std::string& password_hash);
     std::optional<User> getUsername(const std::string& username);
     std::optional<User> getUserID(int userID);
-
-
-
 }

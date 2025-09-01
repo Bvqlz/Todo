@@ -1,11 +1,11 @@
-// ===== GLOBAL STATE MANAGEMENT =====
+// state management
 let currentUser = null;
 let tasks = [];
 let currentFilter = 'all';
 let currentTaskId = null;
 let isRegisterMode = false;
 
-// ===== DOM ELEMENT REFERENCES =====
+// DOM elements
 const authSection = document.getElementById('authSection');
 const mainApp = document.getElementById('mainApp');
 const authForm = document.getElementById('authForm');
@@ -31,13 +31,7 @@ const modalTaskStatus = document.getElementById('modalTaskStatus');
 const updateTaskBtn = document.getElementById('updateTaskBtn');
 const deleteTaskBtn = document.getElementById('deleteTaskBtn');
 
-// ===== UTILITY FUNCTIONS =====
-
-/**
- * Display success or error messages in the auth section
- * @param {string} message - Message to display
- * @param {string} type - 'success' or 'error'
- */
+// show varying message on user choice
 function showMessage(message, type = 'success') {
     authMessage.className = `message ${type}`;
     authMessage.innerHTML = `
@@ -52,11 +46,7 @@ function showMessage(message, type = 'success') {
     }, 5000);
 }
 
-/**
- * Set loading state for buttons with spinner
- * @param {HTMLElement} element - Button element
- * @param {boolean} loading - Loading state
- */
+
 function setLoading(element, loading) {
     if (loading) {
         element.disabled = true; // we disable the button when its loading. User cannot click it
@@ -67,9 +57,7 @@ function setLoading(element, loading) {
     }
 }
 
-/**
- * Update task statistics counters
- */
+
 function updateStats() {
     const todoTasks = tasks.filter(task => task.status === 'todo');
     const inprogressTasks = tasks.filter(task => task.status === 'inprogress');
@@ -81,9 +69,7 @@ function updateStats() {
     document.getElementById('totalCount').textContent = tasks.length;
 }
 
-/**
- * Render tasks in the task list with filtering
- */
+//based on the filter chosen, we render that task list.
 function renderTasks() {
     const filteredTasks = currentFilter === 'all' ? tasks : tasks.filter(task => task.status === currentFilter);
 
@@ -123,22 +109,16 @@ function renderTasks() {
     updateStats();
 }
 
-/**
- * Escape HTML to prevent XSS attacks
- * @param {string} text - Text to escape
- * @returns {string} - Escaped text
- */
+
 function escapeHtml(text) {
     const div = document.createElement('div'); // this is to prevent running html code in our task description.
     div.textContent = text;
     return div.innerHTML;
 }
 
-// ===== AUTHENTICATION FUNCTIONS =====
+//auth functions
 
-/**
- * Toggle between login and register mode
- */
+//changes html elements based on the user choice
 function toggleAuthMode() {
     isRegisterMode = !isRegisterMode;
 
@@ -158,10 +138,7 @@ function toggleAuthMode() {
     authMessage.style.display = 'none';
 }
 
-/**
- * Handle authentication (login or register)
- * @param {Event} e - Form submit event
- */
+//verifies login. Calls other functions upon success
 async function handleAuth(e) {
     e.preventDefault();
 
@@ -221,9 +198,6 @@ async function handleAuth(e) {
     }
 }
 
-/**
- * Handle user logout
- */
 async function logout() {
     try {
         const response = await fetch('/logout', { method: 'POST' });
@@ -244,9 +218,7 @@ async function logout() {
     }
 }
 
-/**
- * Show authentication section
- */
+//function from the toggle for the front page
 function showAuthSection() {
     authSection.style.display = 'block';
     mainApp.style.display = 'none';
@@ -262,9 +234,7 @@ function showAuthSection() {
     }
 }
 
-/**
- * Show main application
- */
+//when logged in we hide the login/register page
 function showMainApp() {
     authSection.style.display = 'none';
     mainApp.style.display = 'block';
@@ -274,11 +244,7 @@ function showMainApp() {
     fetchTasks();
 }
 
-// ===== TASK MANAGEMENT FUNCTIONS =====
-
-/**
- * Fetch tasks from the server
- */
+//retrieve all tasks
 async function fetchTasks() {
     try {
         const response = await fetch('/tasks');
@@ -301,9 +267,7 @@ async function fetchTasks() {
     }
 }
 
-/**
- * Add a new task
- */
+
 async function addTask() {
     const description = taskInput.value.trim();
 
@@ -348,9 +312,7 @@ async function addTask() {
     }
 }
 
-/**
- * Update an existing task
- */
+
 async function updateTask() {
     if (!currentTaskId) return;
 
@@ -400,9 +362,7 @@ async function updateTask() {
     }
 }
 
-/**
- * Delete a task
- */
+
 async function deleteTask() {
     if (!currentTaskId) return;
 
@@ -442,12 +402,7 @@ async function deleteTask() {
     }
 }
 
-// ===== MODAL FUNCTIONS =====
-
-/**
- * Open task modal with task data
- * @param {Object} task - Task object
- */
+//modal popup
 function openTaskModal(task) {
     currentTaskId = task.id;
     modalTaskId.value = task.id;
@@ -459,9 +414,6 @@ function openTaskModal(task) {
     setTimeout(() => modalTaskDescription.focus(), 100);
 }
 
-/**
- * Close task modal
- */
 function closeTaskModal() {
     taskModal.style.display = 'none';
     currentTaskId = null;
@@ -470,9 +422,7 @@ function closeTaskModal() {
     authMessage.style.display = 'none';
 }
 
-/**
- * Check authentication status on page load
- */
+
 async function checkAuthStatus() {
     try {
         const response = await fetch('/me');
@@ -490,7 +440,6 @@ async function checkAuthStatus() {
     }
 }
 
-// ===== EVENT LISTENERS =====
 
 // Authentication events
 authForm.addEventListener('submit', handleAuth);
@@ -540,11 +489,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// ===== INITIALIZATION =====
 
-/**
- * Initialize the application
- */
 function initializeApp() {
     // Check authentication status
     checkAuthStatus();
@@ -568,15 +513,4 @@ document.addEventListener('visibilitychange', () => {
     if (!document.hidden && currentUser && mainApp.style.display !== 'none') {
         fetchTasks();
     }
-});
-
-// Handle online/offline status
-window.addEventListener('online', () => {
-    if (currentUser && mainApp.style.display !== 'none') {
-        fetchTasks();
-    }
-});
-
-window.addEventListener('offline', () => {
-    showMessage('You are currently offline. Some features may not work.', 'error');
 });

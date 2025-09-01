@@ -1,5 +1,4 @@
 #include "task.hpp"
-
 #include <stdexcept>
 
 std::string toString(status eStat) // enum status
@@ -19,7 +18,7 @@ std::string toString(status eStat) // enum status
 
 status toStatus(const std::string &sStatus) // string status
 {
-    // Use if-else if-else for string comparisons
+    // if-else block for comparisons
     if (sStatus == "todo")
     {
         return status::Todo;
@@ -34,7 +33,6 @@ status toStatus(const std::string &sStatus) // string status
     }
     else
     {
-        // Build the error message string before throwing the exception
         throw std::runtime_error("Invalid status string: " + sStatus);
     }
 }

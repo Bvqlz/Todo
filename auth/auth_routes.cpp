@@ -65,14 +65,14 @@ void authRoutes(crow::App<crow::CookieParser>& app)
         CROW_LOG_INFO << "Received a login request";
         CROW_LOG_INFO << "Request body: " << req.body;
 
-        auto& cookie_ctx = app.get_context<crow::CookieParser>(req); //Create an object were cookies can be accessed
+        auto& cookie_ctx = app.get_context<crow::CookieParser>(req); //Create an object where cookies can be accessed
         std::string existingSession = cookie_ctx.get_cookie("sessionID"); //This retrieves the cookie value from our request under the sessionID key.
 
         if (!existingSession.empty()) //only works if a value is found
         {
             AuthHandle::deleteSession(existingSession); // will delete the cookie from the map that was created.
             //this line will clear our broswer cookie
-            cookie_ctx.set_cookie("sessionID", "").path("/").max_age(0).httponly(); //this set the cookie's value to an empty string. Alos made it's age as zero.
+            cookie_ctx.set_cookie("sessionID", "").path("/").max_age(0).httponly(); //this set the cookie's value to an empty string. Also made its age as zero.
             CROW_LOG_INFO << "Cleared existing session for login request: " << existingSession;
 
         }

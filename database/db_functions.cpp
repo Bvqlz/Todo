@@ -66,7 +66,7 @@ namespace database
             //which stores information about all columns in all tables.
             //the attrelid line filters results to only be the columns of the tasks table
             //we further filter to user_id . If this column does not exist we create it
-            //by creating a forign key, fk_user that is user_id is referenced by our other table users
+            //by creating a foreign key, fk_user that is user_id is referenced by our other table users
             //cascade will delete all the tasks associated with that user should that user be deleted
 
             W.exec("CREATE TABLE IF NOT EXISTS tasks ("
