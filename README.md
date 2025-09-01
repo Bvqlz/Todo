@@ -1,6 +1,6 @@
 # C++ REST API Todo Application
 
-A full-stack todo list application built with C++ backend using the Crow framework and a responsive JavaScript frontend. This project demonstrates CRUD operations, user authentication, and modern web development practices using C++ for server-side development.
+A full-stack todo list application built with C++ backend using the Crow framework and a JavaScript frontend. This project demonstrates CRUD operations, user authentication, and web development practices using C++ for server-side development.
 
 ## Features
 
@@ -18,7 +18,6 @@ A full-stack todo list application built with C++ backend using the Crow framewo
 - **Status Tracking**: Todo, In Progress, Completed
 
 ### Frontend
-- **Responsive Design** - works on desktop, tablet, and mobile
 - **Task Statistics** showing task counts by status
 - **Filter System** to view tasks by status
 - **Modal Interface** for detailed task editing
@@ -144,7 +143,7 @@ cmake --build .
 - **Input Validation**: Limited server-side input validation beyond basic SQL injection protection
 
 ### Architecture Limitations  
-- **Single Server**: No load balancing or horizontal scaling support
+- **Single Server**: No load balancing or horizontal scaling 
 - **In-Memory Sessions**: Sessions don't persist across server restarts
 - **No Database Migrations**: Schema changes require manual database updates
 - **Limited Error Handling**: Some edge cases in error handling could be improved
@@ -163,8 +162,5 @@ This project demonstrates:
 3. **Database Integration** with PostgreSQL and prepared statements
 4. **Authentication Systems** with password hashing
 5. **Frontend-Backend Communication** using fetch API and JSON
-6. **Responsive Web Design** with modern CSS techniques
-7. **Security Practices** like XSS prevention and input validation
-8. **Project Organization** with modular code structure
-
+6. **Security Practices** like XSS prevention and input validation
 ---
