@@ -15,13 +15,11 @@ void taskRoutes(crow::App<crow::CookieParser>& app)
             CROW_LOG_ERROR << "HTML file was not found.";
              return crow::response(crow::status::NOT_FOUND, "Page was not found");
          }
-
          return crow::response(crow::status::OK, "text/html", html);
-
     });
 
     CROW_ROUTE(app, "/frontend/style.css")
-    ([](const crow::request& req)
+    ([]()
     {
         std::string css = utilities::readFile("../frontend/style.css");
         if (css.empty())
@@ -32,7 +30,7 @@ void taskRoutes(crow::App<crow::CookieParser>& app)
     });
 
     CROW_ROUTE(app, "/frontend/script.js")
-    ([](const crow::request& req)
+    ([]()
     {
         std::string js = utilities::readFile("../frontend/script.js");
         if (js.empty())
@@ -198,28 +196,29 @@ void taskRoutes(crow::App<crow::CookieParser>& app)
                 description = json_body["description"].s();
             }
 
-            std::optional<status> Estatus;
-            if (json_body.count("status") && json_body["status"].t() == crow::json::type::String) {
-                try
-                {
-                    std::string Jstatus = json_body["status"].s();
-                    Estatus = toStatus(Jstatus);
 
-                }
-                catch (const std::runtime_error& e)
-                {
-                    crow::json::wvalue error_json;
-                    error_json["message"] = e.what();
-                    return crow::response(crow::status::BAD_REQUEST, error_json);
-                }
+        std::optional<status> Estatus;
+        if (json_body.count("status") && json_body["status"].t() == crow::json::type::String) {
+            try
+            {
+                std::string Jstatus = json_body["status"].s();
+                Estatus = toStatus(Jstatus);
+
             }
-
-            if (!description && !Estatus) // Check if at least one field is provided for update
+            catch (const std::runtime_error& e)
             {
                 crow::json::wvalue error_json;
-                error_json["message"] = "No valid fields to update were provided (expected 'description' or 'status' as string)";
+                error_json["message"] = e.what();
                 return crow::response(crow::status::BAD_REQUEST, error_json);
             }
+        }
+
+        if (!description && !Estatus) // Check if at least one field is provided for update
+        {
+            crow::json::wvalue error_json;
+            error_json["message"] = "No valid fields to update were provided (expected 'description' or 'status' as string)";
+            return crow::response(crow::status::BAD_REQUEST, error_json);
+        }
 
         try
         {
