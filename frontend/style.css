@@ -170,6 +170,9 @@ body {
     text-align: center;
     margin-top: 1.5rem;
     color: var(--gray-600);
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .auth-toggle button {

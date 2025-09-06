@@ -11,6 +11,7 @@ const mainApp = document.getElementById('mainApp');
 const authForm = document.getElementById('authForm');
 const authMessage = document.getElementById('authMessage');
 const authSubtitle = document.getElementById('authSubtitle'); // changes on login or register
+const toggleMsg = document.getElementById('toggleMsg'); //changes on login or register
 const authButton = document.getElementById('authButton');
 const authButtonText = document.getElementById('authButtonText');  // changes on login or register
 const toggleAuthBtn = document.getElementById('toggleAuth');  // changes on login or register
@@ -124,12 +125,14 @@ function toggleAuthMode() {
 
     if (isRegisterMode) {
         authSubtitle.textContent = 'Create your account';
-        authButtonText.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+        authButtonText.innerHTML = 'Create Account';
         toggleAuthBtn.textContent = 'Sign in instead';
+        toggleMsg.textContent = 'Already have an account?';
     } else {
         authSubtitle.textContent = 'Sign in to manage your tasks';
-        authButtonText.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+        authButtonText.innerHTML = 'Sign In';
         toggleAuthBtn.textContent = 'Create one';
+        toggleMsg.textContent = 'Don\'t have an account?';
     }
 
     // Clear form fields and messages
