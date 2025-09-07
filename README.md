@@ -163,4 +163,15 @@ This project demonstrates:
 4. **Authentication Systems** with password hashing
 5. **Frontend-Backend Communication** using fetch API and JSON
 6. **Security Practices** like XSS prevention and input validation
+
+## Demo
+
+### Login
+![Login](./images/Sign_In.jpg)
+
+### Dashboard
+![Dash](./images/Dashboard.jpg)
+
+### Task Editing
+![Task Edit](./images/Task_Edit.jpg)
 ---
